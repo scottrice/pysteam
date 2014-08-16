@@ -10,12 +10,10 @@ setup(
     license='MIT',
     packages=['pysteam'],
     install_requires=[
-        'steamapi',
     ],
     data_files=[
     ],
     dependency_links=[
-        'https://github.com/smiley/steamapi/archive/master.tar.gz#egg=steamapi-0.1',
     ],
     zip_safe=False,
     test_suite='nose.collector',
