@@ -10,7 +10,6 @@ Copyright (c) 2013 Scott Rice. All rights reserved.
 import sys
 import os
 
-import steam
 from _shortcut_parser import ShortcutParser
 from _shortcut_generator import ShortcutGenerator
 
@@ -36,19 +35,6 @@ def _community_id_64_from_32(communityid32):
 
 class User(object):
 
-    @staticmethod
-    def local_users(steam):
-        """Returns an array of user ids for users on the filesystem"""
-        # Any users on the machine will have an entry inside of the userdata
-        # folder. As such, the easiest way to find a list of all users on the
-        # machine is to just list the folders inside userdata
-        ids = []
-        userdata_dir = steam.userdata_location()
-        for entry in os.listdir(userdata_dir):
-            if os.path.isdir(os.path.join(userdata_dir,entry)):
-                ids.append(int(entry))
-        return ids
-    
     def __init__(self, steam, userid):
         self.steam = steam
 
@@ -61,13 +47,19 @@ class User(object):
 
         self.shortcuts = self._load_shortcuts()
 
+    def __eq__(self, other):
+        return (
+            isinstance(other,self.__class__) and
+            self.id32 == other.id32
+        )
+
     def _user_config_directory(self):
         return os.path.join(
             self.steam.userdata_location(),
             str(self.id32),
             "config"
         )
-    
+
     def _load_shortcuts(self):
         try:
             parsed_shortcuts = ShortcutParser().parse(self.shortcuts_file())
@@ -87,7 +79,7 @@ class User(object):
         """Returns a path to this users grid image directory, where custom
         grid images are stored"""
         return os.path.join(self._user_config_directory(), "grid")
-    
+
     def save_shortcuts(self):
         # Write shortcuts to file
         contents = ShortcutGenerator().to_string(self.shortcuts)

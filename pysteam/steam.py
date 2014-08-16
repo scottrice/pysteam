@@ -12,6 +12,8 @@ Represents the local steam installation.
 import sys
 import os
 
+import user
+
 def _is_mac():
     return sys.platform == 'darwin'
 
@@ -37,6 +39,12 @@ class Steam(object):
             steam_location = _windows_steam_location()
         self.steam_location = steam_location
 
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__) and
+            self.userdata_location() == other.userdata_location()
+        )
+
     def userdata_location(self):
         if _is_windows():
             return os.path.join(self.steam_location, "userdata")
@@ -56,3 +64,16 @@ class Steam(object):
             )
         else:
             raise EnvironmentError("Running on unsupported environment %s" % sys.platform)
+
+    def local_users(self):
+        """Returns an array of user ids for users on the filesystem"""
+        # Any users on the machine will have an entry inside of the userdata
+        # folder. As such, the easiest way to find a list of all users on the
+        # machine is to just list the folders inside userdata
+        users = []
+        userdata_dir = self.userdata_location()
+        for entry in os.listdir(userdata_dir):
+            if os.path.isdir(os.path.join(userdata_dir,entry)):
+                u = user.User(self, int(entry))
+                users.append(u)
+        return users

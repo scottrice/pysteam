@@ -21,6 +21,15 @@ class Game(object):
         self.user = user
         self._appid = appid
 
+    def __eq__(self, other):
+        """
+        Steam considers two games equal if they have the same App ID
+        """
+        return (
+            isinstance(other,self.__class__) and
+            self.appid() == other.appid()
+        )
+
     def _custom_image_path(self, extension):
         filename = '%s%s' % (self.appid(), extension)
         return os.path.join(self.user.grid_directory(), filename)

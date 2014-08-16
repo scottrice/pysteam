@@ -18,6 +18,14 @@ from pysteam import steam
 
 class TestSteam(unittest.TestCase):
 
+    def setUp(self):
+        self.temp_directory = tempfile.mkdtemp()
+        self.userdata_directory = os.path.join(self.temp_directory, "userdata")
+        os.mkdir(self.userdata_directory)
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_directory)
+
     @mock.patch("pysteam.steam._windows_steam_location")
     @mock.patch("pysteam.steam._is_linux")
     @mock.patch("pysteam.steam._is_mac")
@@ -90,3 +98,16 @@ class TestSteam(unittest.TestCase):
         self.assertIn("share", normal_steam_userdata)
 
         shutil.rmtree(custom_temp_dir)
+
+    @mock.patch("pysteam.steam.Steam.userdata_location")
+    def test_local_users(self, mocked_userdata_location):
+        mocked_userdata_location.return_value = self.userdata_directory
+
+        test_user_ids = [40586375, 49642724]
+        for user_id in test_user_ids:
+            os.mkdir(os.path.join(self.userdata_directory, str(user_id)))
+
+        s = steam.Steam()
+        ids = [ u.id32 for u in s.local_users() ]
+
+        self.assertEqual(ids, test_user_ids)
