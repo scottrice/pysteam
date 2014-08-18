@@ -30,7 +30,7 @@ class TestGame(unittest.TestCase):
         self.steam = steam.Steam()
         self.user = user.User(self.steam, 40586375)
         self.game_id = 1234
-        self.game = game.Game(self.user, self.game_id)
+        self.game = game.Game(self.game_id)
         # Make necessary directories
         os.makedirs(self.user.grid_directory())
 
@@ -44,37 +44,37 @@ class TestGame(unittest.TestCase):
         f.close()
 
     def test_image_returns_path_if_file_exists(self):
-        self.assertIsNone(self.game.custom_image())
+        self.assertIsNone(self.game.custom_image(self.user))
 
-        grid_image_path = self.game._custom_image_path('.png')
+        grid_image_path = self.game._custom_image_path(self.user, '.png')
         self.write_file_with_contents(grid_image_path, 'test')
-        self.assertEqual(self.game.custom_image(), grid_image_path)
+        self.assertEqual(self.game.custom_image(self.user), grid_image_path)
     
     def test_image_returns_none_if_file_exists_with_invalid_extension(self):
         self.assertEqual(self.steam.userdata_location(), self.userdata_directory)
-        self.assertIsNone(self.game.custom_image())
+        self.assertIsNone(self.game.custom_image(self.user))
 
-        grid_image_path = self.game._custom_image_path('.gif') #Invalid extension
+        grid_image_path = self.game._custom_image_path(self.user, '.gif') #Invalid extension
         self.write_file_with_contents(grid_image_path, 'test')
-        self.assertIsNone(self.game.custom_image())
+        self.assertIsNone(self.game.custom_image(self.user))
 
     def test_set_image_overwrites_existing_image(self):
         # Setup needed files
         old_contents = "old image contents"
         new_contents = "new image contents"
-        grid_image_path = self.game._custom_image_path('.jpg')
+        grid_image_path = self.game._custom_image_path(self.user, '.jpg')
         self.write_file_with_contents(grid_image_path, old_contents)
         new_image_path = os.path.join(self.temp_directory, 'temp_image.png')
         self.write_file_with_contents(new_image_path, new_contents)
 
         # Verify that the games image contains the old contents
-        before = open(self.game.custom_image())
+        before = open(self.game.custom_image(self.user))
         self.assertEqual(before.read(), old_contents)
         before.close()
 
         # Should overwrite the old image
-        self.game.set_image(new_image_path)
+        self.game.set_image(self.user, new_image_path)
 
-        after = open(self.game.custom_image())
+        after = open(self.game.custom_image(self.user))
         self.assertEqual(after.read(), new_contents)
         after.close()

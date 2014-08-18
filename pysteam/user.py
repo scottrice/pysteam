@@ -55,8 +55,7 @@ class User(object):
 
     def _user_config_directory(self):
         return os.path.join(
-            self.steam.userdata_location(),
-            str(self.id32),
+            self.userdata_directory(),
             "config"
         )
 
@@ -71,6 +70,12 @@ class User(object):
             parsed_shortcuts = []
         return parsed_shortcuts
 
+    def userdata_directory(self,):
+        return os.path.join(
+            self.steam.userdata_location(),
+            str(self.id32)
+        )
+
     def shortcuts_file(self):
         """Returns a path to this users shortcuts.vdf file"""
         return os.path.join(self._user_config_directory(), "shortcuts.vdf")
@@ -80,9 +85,19 @@ class User(object):
         grid images are stored"""
         return os.path.join(self._user_config_directory(), "grid")
 
-    def save_shortcuts(self):
+    def save_shortcuts(self, path=None, makedirs=True):
+        if path is None:
+          path = self.shortcuts_file()
+        parent_directory = os.path.dirname(path)
+        if not os.path.isdir(parent_directory) and makedirs:
+          try:
+            os.makedirs(parent_directory)
+          except OSError:
+            raise OSError("Cannot write to directory `%s`." % parent_directory)
         # Write shortcuts to file
-        contents = ShortcutGenerator().to_string(self.shortcuts)
-        f = open(self.shortcuts_file(), "w")
-        f.write(contents)
-        f.close()
+        try:
+          contents = ShortcutGenerator().to_string(self.shortcuts)
+          with open(path, "w") as f:
+            f.write(contents)
+        except IOError:
+          raise IOError("Cannot save file to `%s`. Permission Denied")
