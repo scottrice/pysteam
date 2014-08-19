@@ -41,7 +41,7 @@ class ShortcutGenerator(object):
         # also seems to be an array, even though Steam wont let more than one
         # be used. I am just going to use a special function to represent this
         # strange case
-        string += self.generate_tags_string(shortcut.tag)
+        string += self.generate_tags_string(shortcut.tags)
         string += x08
         return string
 
@@ -52,17 +52,14 @@ class ShortcutGenerator(object):
     def generate_keyvalue_pair(self,key,value,more=True):
         return x01 + key + x00 + value + (x00 if more else x08)
 
-    def generate_tags_string(self,tag):
+    def generate_tags_string(self,tags):
         string = x00 + "tags" + x00
-        if tag == "":
-            string += x08
-        else:
-            string += self.generate_tag_array_string([tag])
+        string += self.generate_tag_array_string(tags)
         return string
 
     def generate_tag_array_string(self,tags):
         string = ""
         for i in range(len(tags)):
             tag = tags[i]
-            string += x01 + str(i) + x00 + str(tag) + x00 + x08
-        return string
+            string += x01 + str(i) + x00 + str(tag) + x00
+        return string + x08

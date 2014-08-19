@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pysteam',
-    version='0.1.2',
+    version='0.1.3',
     description='Python library to work with Steam',
     url='http://github.com/scottrice/pysteam',
     author='Scott Rice',

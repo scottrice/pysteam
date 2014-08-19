@@ -66,9 +66,14 @@ class ShortcutParser(object):
             return None
 
     def match_tags_string(self,string):
-        match = re.match(ur"\u00010\u0000(.*)\u0000",string)
-        if match:
-            groups = match.groups()
-            return groups[0]
-        else:
-            return ""
+        tags = []
+        while True:
+          match = re.match(ur"(.*)\u0001[0-9]+\u0000(.*?)\u0000",string)
+          if match:
+              groups = match.groups()
+              string = groups[0]
+              tag = groups[1]
+              tags.append(tag)
+          else:
+              tags.reverse()
+              return tags

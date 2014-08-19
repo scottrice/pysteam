@@ -15,12 +15,14 @@ from _crc_algorithms import Crc
 
 class Shortcut(game.Game):
 
-    def __init__(self, name, exe, startdir, icon="", tag=""):
+    def __init__(self, name, exe, startdir, icon="", tags=None):
+        if tags is None:
+          tags = []
         self.name = name
         self.exe = exe
         self.startdir = startdir
         self.icon = icon
-        self.tag = tag
+        self.tags = tags
 
     def appid(self):
         algorithm = Crc(width = 32, poly = 0x04C11DB7, reflect_in = True, xor_in = 0xffffffff, reflect_out = True, xor_out = 0xffffffff)
