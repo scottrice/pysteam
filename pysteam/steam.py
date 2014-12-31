@@ -45,6 +45,19 @@ class Steam(object):
             self.userdata_location() == other.userdata_location()
         )
 
+    def _is_user_directory(self, pathname):
+      """Check whether `pathname` is a valid user data directory
+
+      This method is meant to be called on the contents of the userdata dir.
+      As such, it will return True when `pathname` refers to a directory name
+      that can be interpreted as a users' userID.
+      """
+      fullpath = os.path.join(self.userdata_location(), pathname)
+      # SteamOS puts a directory named 'anonymous' in the userdata directory
+      # by default. Since we assume that pathname is a userID, ignore any name
+      # that can't be converted to a number
+      return os.path.isdir(fullpath) and pathname.isdigit()
+
     def userdata_location(self):
         if _is_windows():
             return os.path.join(self.steam_location, "userdata")
@@ -70,10 +83,6 @@ class Steam(object):
         # Any users on the machine will have an entry inside of the userdata
         # folder. As such, the easiest way to find a list of all users on the
         # machine is to just list the folders inside userdata
-        users = []
-        userdata_dir = self.userdata_location()
-        for entry in os.listdir(userdata_dir):
-            if os.path.isdir(os.path.join(userdata_dir,entry)):
-                u = user.User(self, int(entry))
-                users.append(u)
-        return users
+        userdirs = filter(self._is_user_directory, os.listdir(self.userdata_location()))
+        # Exploits the fact that the directory is named the same as the user id
+        return map(lambda userdir: user.User(self, int(userdir)), userdirs)

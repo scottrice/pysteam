@@ -102,12 +102,22 @@ class TestSteam(unittest.TestCase):
     @mock.patch("pysteam.steam.Steam.userdata_location")
     def test_local_users(self, mocked_userdata_location):
         mocked_userdata_location.return_value = self.userdata_directory
-
-        test_user_ids = [40586375, 49642724]
-        for user_id in test_user_ids:
-            os.mkdir(os.path.join(self.userdata_directory, str(user_id)))
+        os.mkdir(os.path.join(self.userdata_directory, "40586375"))
+        os.mkdir(os.path.join(self.userdata_directory, "49642724"))
 
         s = steam.Steam()
         ids = [ u.id32 for u in s.local_users() ]
 
-        self.assertEqual(ids, test_user_ids)
+        self.assertEqual(ids, [40586375, 49642724])
+
+    @mock.patch("pysteam.steam.Steam.userdata_location")
+    def test_local_users_ignores_anonymous_user(self, mocked_userdata_location):
+        mocked_userdata_location.return_value = self.userdata_directory
+        os.mkdir(os.path.join(self.userdata_directory, "40586375"))
+        os.mkdir(os.path.join(self.userdata_directory, "49642724"))
+        os.mkdir(os.path.join(self.userdata_directory, "anonymous"))
+
+        s = steam.Steam()
+        ids = [ u.id32 for u in s.local_users() ]
+
+        self.assertEqual(ids, [40586375, 49642724])
