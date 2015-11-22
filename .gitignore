@@ -17,6 +17,10 @@ Icon
 .Spotlight-V100
 .Trashes
 
+# Buck
+.buckd
+buck-out/
+
 ###########
 # Python related ignores
 ###########
