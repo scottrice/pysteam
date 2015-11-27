@@ -4,4 +4,5 @@ python_library(
     srcs = glob([
         'pysteam/**/*.py',
     ]),
+    visibility = ['PUBLIC'],
 )
