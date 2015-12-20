@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # encoding: utf-8
 """
 test_user.py
@@ -14,8 +13,8 @@ import shutil
 import tempfile
 import unittest
 
-from pysteam import steam
-from pysteam import user
+from pysteam.legacy import steam
+from pysteam.legacy import user
 
 class TestUser(unittest.TestCase):
     

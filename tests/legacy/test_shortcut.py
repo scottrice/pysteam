@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # encoding: utf-8
 """
 test_shortcut.py
@@ -11,7 +10,7 @@ import sys
 import os
 import unittest
 
-from pysteam import shortcut
+from pysteam.legacy import shortcut
 
 class TestShortcut(unittest.TestCase):
 

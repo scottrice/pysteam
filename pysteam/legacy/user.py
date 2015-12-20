@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # encoding: utf-8
 """
 user.py
@@ -10,8 +9,8 @@ Copyright (c) 2013 Scott Rice. All rights reserved.
 import sys
 import os
 
-from _shortcut_parser import ShortcutParser
-from _shortcut_generator import ShortcutGenerator
+from pysteam._shortcut_parser import ShortcutParser
+from pysteam._shortcut_generator import ShortcutGenerator
 
 # Information about SteamIDs and conversion between them found here:
 # https://developer.valvesoftware.com/wiki/SteamID

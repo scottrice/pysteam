@@ -1,123 +1,68 @@
-#!/usr/bin/env python
 # encoding: utf-8
-"""
-test_steam.py
 
-Created by Scott on 2013-12-29.
-Copyright (c) 2013 Scott Rice. All rights reserved.
-"""
-
-import sys
 import os
-import unittest
-import mock
-import tempfile
 import shutil
+import sys
+import tempfile
+import unittest
 
+import mock
+
+from nose_parameterized import parameterized
+
+from pysteam import model
 from pysteam import steam
 
 class TestSteam(unittest.TestCase):
 
-    def setUp(self):
-        self.temp_directory = tempfile.mkdtemp()
-        self.userdata_directory = os.path.join(self.temp_directory, "userdata")
-        os.mkdir(self.userdata_directory)
+  def setUp(self):
+    self.tempdir = tempfile.mkdtemp()
 
-    def tearDown(self):
-        shutil.rmtree(self.temp_directory)
+  def tearDown(self):
+    shutil.rmtree(self.tempdir)
+    self.tempdir = None
 
-    @mock.patch("pysteam.steam._windows_steam_location")
-    @mock.patch("pysteam.steam._is_linux")
-    @mock.patch("pysteam.steam._is_mac")
-    @mock.patch("pysteam.steam._is_windows")
-    def test_userdata_location_windows(self, mock_is_windows, mock_is_mac, mock_is_linux, mock_windows_steam_location):
-        mock_is_windows.return_value = True
-        mock_is_mac.return_value = False
-        mock_is_linux.return_value = False
+  def _make_folders_in_temp_directory_for_ids(self, uids):
+    assert(os.path.exists(self.tempdir))
+    paths = map(lambda uid: os.path.join(self.tempdir, uid), uids)
+    for path in paths:
+      os.mkdir(path)
 
-        custom_temp_dir = tempfile.mkdtemp()
-        custom_steam = steam.Steam(steam_location=custom_temp_dir)
-        custom_steam_userdata = custom_steam.userdata_location()
-        self.assertIn(custom_temp_dir, custom_steam_userdata)
-        self.assertEquals(os.path.basename(custom_steam_userdata), "userdata")
+  def test_get_steam_returns_none_if_directory_doesnt_exist(self):
+    with mock.patch('os.path.exists', return_value=False):
+      self.assertIsNone(steam.get_steam())
 
-        reg_temp_dir = tempfile.mkdtemp()
-        mock_windows_steam_location.return_value = reg_temp_dir
-        reg_steam = steam.Steam()
-        reg_steam_userdata = reg_steam.userdata_location()
-        self.assertIn(reg_temp_dir, reg_steam_userdata)
-        self.assertEquals(os.path.basename(reg_steam_userdata), "userdata")
+  def test_local_user_ids_returns_empty_list_for_empty_userdata_directory(self):
+    s = model.Steam(self.tempdir)
+    self.assertEqual(len(steam.local_user_ids(s)), 0)
 
-        shutil.rmtree(custom_temp_dir)
-        shutil.rmtree(reg_temp_dir)
+  def test_local_user_ids_returns_none_if_steam_is_none(self):
+    self.assertIsNone(steam.local_user_ids(None))
 
-    @mock.patch("pysteam.steam._is_linux")
-    @mock.patch("pysteam.steam._is_mac")
-    @mock.patch("pysteam.steam._is_windows")
-    def test_userdata_location_mac(self, mock_is_windows, mock_is_mac, mock_is_linux):
-        mock_is_windows.return_value = False
-        mock_is_mac.return_value = True
-        mock_is_linux.return_value = False
+  def test_local_user_contexts_returns_none_if_steam_is_none(self):
+    self.assertIsNone(steam.local_user_contexts(None))
 
-        custom_temp_dir = tempfile.mkdtemp()
-        custom_steam = steam.Steam(steam_location=custom_temp_dir)
-        custom_steam_userdata = custom_steam.userdata_location()
+  def test_local_user_ids_returns_list_of_users_with_entries_in_userdata_folder(self):
+    self._make_folders_in_temp_directory_for_ids(['1234', '4567'])
+    s = model.Steam(self.tempdir)
 
-        normal_steam = steam.Steam()
-        normal_steam_userdata = normal_steam.userdata_location()
+    uids = steam.local_user_ids(s)
+    self.assertEqual(len(uids), 2)
+    self.assertIn('1234', uids)
+    self.assertIn('4567', uids)
 
-        # Changing the Steam install location should have no effect on the
-        # userdata directory, as it is always in the same place
-        self.assertEqual(custom_steam_userdata, normal_steam_userdata)
-        # On Mac, userdata is in ~/Library/Application Support/Steam/userdata
-        self.assertIn("Library", normal_steam_userdata)
-        self.assertIn("Application Support", normal_steam_userdata)
+  def test_local_user_ids_returns_anonymous_user(self):
+    self._make_folders_in_temp_directory_for_ids(['anonymous'])
+    s = model.Steam(self.tempdir)
 
-        shutil.rmtree(custom_temp_dir)
+    uids = steam.local_user_ids(s)
+    self.assertEqual(len(uids), 1)
+    self.assertEqual(uids[0], 'anonymous')
 
-    @mock.patch("pysteam.steam._is_linux")
-    @mock.patch("pysteam.steam._is_mac")
-    @mock.patch("pysteam.steam._is_windows")
-    def test_userdata_location_linux(self, mock_is_windows, mock_is_mac, mock_is_linux):
-        mock_is_windows.return_value = False
-        mock_is_mac.return_value = False
-        mock_is_linux.return_value = True
+  def test_local_user_contexts_returns_user_context_with_same_steam(self):
+    self._make_folders_in_temp_directory_for_ids(['1234'])
+    s = model.Steam(self.tempdir)
 
-        custom_temp_dir = tempfile.mkdtemp()
-        custom_steam = steam.Steam(steam_location=custom_temp_dir)
-        custom_steam_userdata = custom_steam.userdata_location()
-
-        normal_steam = steam.Steam()
-        normal_steam_userdata = normal_steam.userdata_location()
-
-        # Changing the Steam install location should have no effect on the
-        # userdata directory, as it is always in the same place
-        self.assertEqual(custom_steam_userdata, normal_steam_userdata)
-        # On Linux, userdata is in ~/.local/share/Steam/userdata
-        self.assertIn(".local", normal_steam_userdata)
-        self.assertIn("share", normal_steam_userdata)
-
-        shutil.rmtree(custom_temp_dir)
-
-    @mock.patch("pysteam.steam.Steam.userdata_location")
-    def test_local_users(self, mocked_userdata_location):
-        mocked_userdata_location.return_value = self.userdata_directory
-        os.mkdir(os.path.join(self.userdata_directory, "40586375"))
-        os.mkdir(os.path.join(self.userdata_directory, "49642724"))
-
-        s = steam.Steam()
-        ids = [ u.id32 for u in s.local_users() ]
-
-        self.assertEqual(ids, [40586375, 49642724])
-
-    @mock.patch("pysteam.steam.Steam.userdata_location")
-    def test_local_users_ignores_anonymous_user(self, mocked_userdata_location):
-        mocked_userdata_location.return_value = self.userdata_directory
-        os.mkdir(os.path.join(self.userdata_directory, "40586375"))
-        os.mkdir(os.path.join(self.userdata_directory, "49642724"))
-        os.mkdir(os.path.join(self.userdata_directory, "anonymous"))
-
-        s = steam.Steam()
-        ids = [ u.id32 for u in s.local_users() ]
-
-        self.assertEqual(ids, [40586375, 49642724])
+    contexts = steam.local_user_contexts(s)
+    self.assertEqual(len(contexts), 1)
+    self.assertEqual(contexts[0].steam, s)

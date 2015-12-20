@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # encoding: utf-8
 """
 test_game.py
@@ -14,9 +13,9 @@ import tempfile
 import shutil
 import unittest
 
-from pysteam import game
-from pysteam import steam
-from pysteam import user
+from pysteam.legacy import game
+from pysteam.legacy import steam
+from pysteam.legacy import user
 
 class TestGame(unittest.TestCase):
     
@@ -24,7 +23,7 @@ class TestGame(unittest.TestCase):
         self.temp_directory = tempfile.mkdtemp()
         self.userdata_directory = os.path.join(self.temp_directory, "userdata")
         os.mkdir(self.userdata_directory)
-        self.userdata_patcher = mock.patch("pysteam.steam.Steam.userdata_location")
+        self.userdata_patcher = mock.patch("pysteam.legacy.steam.Steam.userdata_location")
         self.userdata_patcher.start()
         steam.Steam.userdata_location.return_value = self.userdata_directory
         self.steam = steam.Steam()

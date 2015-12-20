@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # encoding: utf-8
 """
 _shortcut_parser.py
@@ -11,7 +10,7 @@ import sys
 import os
 import re
 
-import shortcut
+from model import Shortcut
 
 class ShortcutParser(object):
     
@@ -61,7 +60,7 @@ class ShortcutParser(object):
             startdir = groups[2]
             icon = groups[3]
             tags = self.match_tags_string(groups[4])
-            return shortcut.Shortcut(appname,exe,startdir,icon,tags)
+            return Shortcut(appname,exe,startdir,icon,tags)
         else:
             return None
 

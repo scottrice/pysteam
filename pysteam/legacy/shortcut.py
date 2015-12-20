@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # encoding: utf-8
 """
 shortcut.py
@@ -11,7 +10,7 @@ import sys
 import os
 
 import game
-from _crc_algorithms import Crc
+from pysteam._crc_algorithms import Crc
 
 class Shortcut(game.Game):
 
