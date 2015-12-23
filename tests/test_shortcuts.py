@@ -1,7 +1,8 @@
 # encoding: utf-8
 
-import sys
 import os
+import sys
+import tempfile
 import unittest
 
 from nose_parameterized import parameterized
@@ -25,3 +26,16 @@ class TestShortcut(unittest.TestCase):
     """Tests that pysteam generates the correct appid hash for shortcuts."""
     s = model.Shortcut(name, exe, "", "", None)
     self.assertEqual(shortcuts.shortcut_app_id(s), expected)
+
+  def test_write_shortcuts_creates_file_if_it_doesnt_exist(self):
+    d = tempfile.mkdtemp()
+    path = os.path.join(d, "shortcuts.vdf")
+    dummy = model.Shortcut("Banjo Kazooie", "Banjo Kazooie.exe", "", "", [])
+
+    self.assertFalse(os.path.exists(path))
+    shortcuts.write_shortcuts(path, [dummy])
+    self.assertTrue(os.path.exists(path))
+    self.assertEqual(shortcuts.read_shortcuts(path), [dummy])
+
+    os.remove(path)
+    os.rmdir(d)

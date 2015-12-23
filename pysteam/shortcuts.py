@@ -24,7 +24,7 @@ def shortcut_app_id(shortcut):
 # APIs
 
 def read_shortcuts(path):
-  return ShortcutParser().parse_shortcuts(path)
+  return ShortcutParser().parse(path)
 
 def write_shortcuts(path, shortcuts):
   vdf_contents = ShortcutGenerator().to_string(shortcuts)
