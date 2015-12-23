@@ -46,21 +46,40 @@ def default_linux_userdata_path():
 # file, or their `grid` directory (where custom images are stored)
 
 def user_specific_data_directory(user_context):
+  """Returns the subdirectory in `userdata` which acts as the root of the
+  user-specific filesystem in Steam (aka all user-specific files are stored
+  under this directory)"""
   return  os.path.join(
     user_context.steam.userdata_directory,
     user_context.user_id
   )
 
-def custom_images_directory(user_context):
+def user_config_directory(user_context):
+  """Returns the user's config directory. This is normally not very useful,
+  and consumers should look at `custom_images_directory` and `shortcuts_path`
+  instead."""
   return os.path.join(
     user_specific_data_directory(user_context),
-    "config",
+    "config"
+  )
+
+def custom_images_directory(user_context):
+  """Returns the path to the directory in which Steam stores all of it's
+  custom grid images. The images are stored where the name is the app id of
+  the app whose image they want to override, and the extension is one of four
+  valid extensions.
+
+  See the `grid` module if you're interested in working with custom images"""
+  return os.path.join(
+    user_config_directory(user_context),
     "grid"
   )
 
 def shortcuts_path(user_context):
+  """Returns the path to the file in which Steam stores its shortcuts. This
+  file is a custom file format, so see the `shortcuts` module if you would
+  like to read/write to this file."""
   return os.path.join(
-    user_specific_data_directory(user_context),
-    "config",
+    user_config_directory(user_context),
     "shortcuts.vdf"
   )
