@@ -34,8 +34,13 @@ class TestVDFParsing(unittest.TestCase):
     generated_contents = ShortcutGenerator().to_string(shortcuts)
     self.assertEqual(file_contents.lower(),generated_contents.lower())
 
-  def test_raises_io_error_when_file_doesnt_exist(self):
+  def test_returns_empty_list_when_file_doesnt_exist(self):
+    invalid_path = os.path.join("this", "path", "doesnt", "exist")
+    parser = ShortcutParser()
+    self.assertEqual(parser.parse(invalid_path), [])
+
+  def test_raises_io_error_when_file_doesnt_exist_and_require_exists_is_false(self):
     invalid_path = os.path.join("this", "path", "doesnt", "exist")
     parser = ShortcutParser()
     with self.assertRaises(IOError):
-      parser.parse(invalid_path)
+      parser.parse(invalid_path, require_exists=True)

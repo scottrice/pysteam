@@ -14,9 +14,12 @@ from model import Shortcut
 
 class ShortcutParser(object):
 
-  def parse(self, path):
+  def parse(self, path, require_exists=False):
     if not os.path.exists(path):
+      if not require_exists:
+        return []
       raise IOError("Shortcuts file '%s' does not exist" % path)
+
     file_contents = open(path, "r").read()
     return self.match_base(file_contents)
 
