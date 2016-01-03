@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -8,7 +9,11 @@ import unittest
 from nose_parameterized import parameterized
 
 from pysteam import model
+from pysteam import paths
 from pysteam import shortcuts
+
+def _dummy_shortcut():
+  return model.Shortcut("Banjo Kazooie", "Banjo Kazooie.exe", "", "", [])
 
 class TestShortcut(unittest.TestCase):
 
@@ -30,12 +35,30 @@ class TestShortcut(unittest.TestCase):
   def test_write_shortcuts_creates_file_if_it_doesnt_exist(self):
     d = tempfile.mkdtemp()
     path = os.path.join(d, "shortcuts.vdf")
-    dummy = model.Shortcut("Banjo Kazooie", "Banjo Kazooie.exe", "", "", [])
 
+    updated_shortcuts = [_dummy_shortcut()]
     self.assertFalse(os.path.exists(path))
-    shortcuts.write_shortcuts(path, [dummy])
+    shortcuts.write_shortcuts(path, updated_shortcuts)
     self.assertTrue(os.path.exists(path))
-    self.assertEqual(shortcuts.read_shortcuts(path), [dummy])
+    self.assertEqual(shortcuts.read_shortcuts(path), updated_shortcuts)
 
     os.remove(path)
     os.rmdir(d)
+
+  def test_get_and_set_shortcuts_creates_file_at_correct_path(self):
+    tempdir = tempfile.mkdtemp()
+
+    steam = model.Steam(tempdir)
+    context = model.LocalUserContext(steam=steam, user_id='anonymous')
+    # Create the `anonymous` directory, cause we can't open shortcuts.vdf for
+    # writing if the containing directory doesn't exist
+    os.makedirs(paths.user_config_directory(context))
+
+    self.assertFalse(os.path.exists(paths.shortcuts_path(context)))
+    self.assertEqual([], shortcuts.get_shortcuts(context))
+
+    updated_shortcuts = [_dummy_shortcut()]
+    shortcuts.set_shortcuts(context, updated_shortcuts)
+    self.assertEqual(updated_shortcuts, shortcuts.get_shortcuts(context))
+
+    shutil.rmtree(tempdir)
